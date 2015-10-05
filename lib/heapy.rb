@@ -1,8 +1,8 @@
 require 'json'
 
-require "heap_inspect/version"
+require "heapy/version"
 
-module HeapInspect
+module Heapy
 
   class CLI
     def initialize(argv)
@@ -14,11 +14,11 @@ module HeapInspect
 
     def help
       puts <<-HALP
-$ heap_inspect read <file|command> <number>
+$ heapy read <file|command> <number>
 
 When run with only a file, it will output the generation and count pairs:
 
-  $ heap_inspect read tmp/2015-09-30-heap.dump
+  $ heapy read tmp/2015-09-30-heap.dump
     Generation:  0 object count: 209191
     Generation: 14 object count: 407
     Generation: 15 object count: 638
@@ -29,7 +29,7 @@ When run with only a file, it will output the generation and count pairs:
 When run with a file and a number it will output detailed information for that
 generation:
 
-  $ heap_inspect read tmp/2015-09-30-heap.dump 17
+  $ heapy read tmp/2015-09-30-heap.dump 17
 
     Analyzing Heap (Generation: 17)
     -------------------------------

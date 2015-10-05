@@ -1,5 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'heap_inspect'
+require 'heapy'
 
 require 'pathname'
     require "open3"

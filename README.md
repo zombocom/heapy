@@ -1,4 +1,4 @@
-# HeapInspect
+# Heapy (Ruby Heap Dump Inspector)
 
 A CLI for analyzing Ruby Heap dumps. Thanks to [Sam Saffron](http://samsaffron.com/archive/2015/03/31/debugging-memory-leaks-in-ruby) for the idea and initial code.
 
@@ -7,7 +7,7 @@ A CLI for analyzing Ruby Heap dumps. Thanks to [Sam Saffron](http://samsaffron.c
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'heap_inspect'
+gem 'heapy'
 ```
 
 And then execute:
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install heap_inspect
+    $ gem install heapy
 
 ## Usage
 
@@ -25,7 +25,7 @@ Step 1) Generate a heap dump. You could [do this manually](http://samsaffron.com
 Step 2) Once you've got the heap dump, you can analyze it using this CLI:
 
 ```
-$ heap_inspect read tmp/2015-10-01T10:18:59-05:00-heap.dump
+$ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump
 
 Generation:  0 object count: 209191
 Generation: 14 object count: 407
@@ -40,7 +40,7 @@ Generally early generations will have a high object count as an app is initializ
 
 
 ```
-$ heap_inspect read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
+$ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
     Analyzing Heap (Generation: 17)
     -------------------------------
 
@@ -61,7 +61,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/heap_inspect. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/heapy. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
 
 
 ## License
