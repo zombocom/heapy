@@ -44,11 +44,14 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
     Analyzing Heap (Generation: 17)
     -------------------------------
 
-    allocated by memory (in bytes)
+    allocated by memory (44061517) (in bytes)
     ==============================
-    /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1 (Memory: 377065, Count: 1 )
-    /Users/richardschneeman/.gem/ruby/2.2.3/gems/actionview-4.2.3/lib/action_view/template.rb:296 (Memory: 35814, Count: 67 )
-    /Users/richardschneeman/.gem/ruby/2.2.3/gems/activerecord-4.2.3/lib/active_record/attribute.rb:5 (Memory: 30672, Count: 426 )
+      39908512  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/timeout.rb:79
+       1284993  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/openssl/buffering.rb:182
+        201068  /app/vendor/bundle/ruby/2.2.0/gems/json-1.8.3/lib/json/common.rb:223
+        189272  /app/vendor/bundle/ruby/2.2.0/gems/newrelic_rpm-3.13.2.302/lib/new_relic/agent/stats_engine/stats_hash.rb:39
+        172531  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/net/http/header.rb:172
+         92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
 ```
 
 You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations.

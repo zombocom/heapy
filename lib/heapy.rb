@@ -34,12 +34,14 @@ generation:
     Analyzing Heap (Generation: 17)
     -------------------------------
 
-    allocated by memory (in bytes)
-    ==============================
-    /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1 (Memory: 377065, Count: 1 )
-    /Users/richardschneeman/.gem/ruby/2.2.3/gems/actionview-4.2.3/lib/action_view/template.rb:296 (Memory: 35814, Count: 67 )
-    /Users/richardschneeman/.gem/ruby/2.2.3/gems/activerecord-4.2.3/lib/active_record/attribute.rb:5 (Memory: 30672, Count: 426 )
-
+allocated by memory (44061517) (in bytes)
+==============================
+  39908512  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/timeout.rb:79
+   1284993  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/openssl/buffering.rb:182
+    201068  /app/vendor/bundle/ruby/2.2.0/gems/json-1.8.3/lib/json/common.rb:223
+    189272  /app/vendor/bundle/ruby/2.2.0/gems/newrelic_rpm-3.13.2.302/lib/new_relic/agent/stats_engine/stats_hash.rb:39
+    172531  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/net/http/header.rb:172
+     92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
 HALP
     end
 
@@ -74,41 +76,46 @@ HALP
       puts ""
 
       generation = Integer(generation)
-      data = []
+
+      #
+      memsize_hash = Hash.new { |h, k| h[k] = 0 }
+      count_hash   = Hash.new { |h, k| h[k] = 0 }
       File.open(@filename) do |f|
         f.each_line do |line|
-          parsed = JSON.parse(line)
-          data << parsed if parsed["generation"] == generation
+          begin
+            parsed = JSON.parse(line)
+            if parsed["generation"] == generation
+              key = "#{ parsed["file"] }:#{ parsed["line"] }"
+              memsize_hash[key] += parsed["memsize"]
+              count_hash[key]   += 1
+            end
+          rescue JSON::ParserError
+            puts "Could not parse #{line}"
+          end
         end
       end
 
+      total_memsize = memsize_hash.inject(0){|count, (k, v)| count += v}
 
       # /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1"=>[{"address"=>"0x7f8a4fbf2328", "type"=>"STRING", "class"=>"0x7f8a4d5dec68", "bytesize"=>223051, "capacity"=>376832, "encoding"=>"UTF-8", "file"=>"/Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim", "line"=>1, "method"=>"new", "generation"=>36, "memsize"=>377065, "flags"=>{"wb_protected"=>true, "old"=>true, "long_lived"=>true, "marked"=>true}}]}
-
-      memsize_hash = {}
-      data.group_by { |row| "#{row["file"]}:#{row["line"]}" }.
-         each do |(k, v)|
-           memsize_hash[k] = {
-             count:   v.count,
-             memsize:  v.inject(0) { |sum, obj| sum + Integer(obj["memsize"]) }
-           }
-         end
-
-
-      puts "allocated by memory (in bytes)"
+      puts "allocated by memory (#{total_memsize}) (in bytes)"
       puts "=============================="
-      memsize_hash.sort {|(k1, v1), (k2, v2)| v2[:memsize] <=> v1[:memsize] }.
-         each do |k,v|
-           puts "#{k} (Memory: #{v[:memsize]}, Count: #{v[:count]} ) "
-         end
+      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      longest      = memsize_hash.first[1].to_s.length
+      memsize_hash.each do |file_line, memsize|
+        puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
+      end
+
+      total_count = count_hash.inject(0){|count, (k, v)| count += v}
 
       puts ""
-      puts "object count"
+      puts "object count (#{total_count})"
       puts "============"
-      memsize_hash.sort {|(k1, v1), (k2, v2)| v2[:count] <=> v1[:count] }.
-         each do |k,v|
-           puts "#{k} (Memory: #{v[:memsize]}, Count: #{v[:count]} ) "
-         end
+      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      longest      = count_hash.first[1].to_s.length
+      count_hash.each do |file_line, memsize|
+        puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
+      end
     end
 
     def analyze
@@ -116,18 +123,26 @@ HALP
       puts "Analyzing Heap"
       puts "=============="
 
-      data = []
+      # generation number is key, value is count
+      data = Hash.new {|h, k| h[k] = 0 }
+
       File.open(@filename) do |f|
         f.each_line do |line|
-          data << JSON.parse(line)
+          begin
+            line = line.chomp
+            json = JSON.parse(line)
+            data[json["generation"]||0] += 1
+          rescue JSON::ParserError
+            puts "Could not parse #{line}"
+          end
         end
       end
 
-      data.group_by{ |row| row["generation"] }.
-        sort { |a, b| a[0].to_i <=> b[0].to_i }.
-        each do |k,v|
-          puts "Generation: #{k || " 0"} object count: #{v.count}"
-        end
+      data = data.sort
+      max_length = data.last[0].to_s.length
+      data.each do |generation, count|
+        puts "Generation: #{ generation.to_s.rjust(max_length) } object count: #{ count }"
+      end
     end
   end
 end
