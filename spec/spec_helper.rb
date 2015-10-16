@@ -13,6 +13,8 @@ end
 def run(cmd)
   out = ""
   Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+    err = stderr.read
+    raise err unless err.empty?
     out = stdout.read
   end
   out
