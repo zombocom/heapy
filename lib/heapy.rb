@@ -69,13 +69,13 @@ HALP
       @filename = filename
     end
 
-    def drill_down(generation)
+    def drill_down(generation_to_inspect)
       puts ""
-      puts "Analyzing Heap (Generation: #{generation})"
+      puts "Analyzing Heap (Generation: #{generation_to_inspect})"
       puts "-------------------------------"
       puts ""
 
-      generation = Integer(generation)
+      generation_to_inspect = Integer(generation_to_inspect)
 
       #
       memsize_hash = Hash.new { |h, k| h[k] = 0 }
@@ -84,9 +84,10 @@ HALP
         f.each_line do |line|
           begin
             parsed = JSON.parse(line)
-            if parsed["generation"] == generation
+            generation = parsed["generation"] || 0
+            if generation == generation_to_inspect
               key = "#{ parsed["file"] }:#{ parsed["line"] }"
-              memsize_hash[key] += parsed["memsize"]
+              memsize_hash[key] += parsed["memsize"] || 0
               count_hash[key]   += 1
             end
           rescue JSON::ParserError
