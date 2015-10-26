@@ -69,6 +69,19 @@ HALP
       @filename = filename
     end
 
+    def read
+      File.open(@filename) do |f|
+        f.each_line do |line|
+          begin
+            parsed = JSON.parse(line)
+            yield parsed
+          rescue JSON::ParserError
+            puts "Could not parse #{line}"
+          end
+        end
+      end
+    end
+
     def drill_down(generation_to_inspect)
       puts ""
       puts "Analyzing Heap (Generation: #{generation_to_inspect})"
@@ -85,26 +98,19 @@ HALP
       reference_hash  = Hash.new { |h, k| h[k] = 0  }
 
       reverse_refs    = Hash.new { |h, k| h[k] = [] }
-      File.open(@filename) do |f|
-        f.each_line do |line|
-          begin
-            parsed = JSON.parse(line)
-            generation = parsed["generation"] || 0
-            if generation == generation_to_inspect
-              key = "#{ parsed["file"] }:#{ parsed["line"] }"
-              memsize_hash[key] += parsed["memsize"] || 0
-              count_hash[key]   += 1
+      read do |parsed|
+        generation = parsed["generation"] || 0
+        if generation == generation_to_inspect
+          key = "#{ parsed["file"] }:#{ parsed["line"] }"
+          memsize_hash[key] += parsed["memsize"] || 0
+          count_hash[key]   += 1
 
-              if parsed["type"] == "STRING".freeze
-                string_count[parsed["value"]][key] += 1
-              end
+          if parsed["type"] == "STRING".freeze
+            string_count[parsed["value"]][key] += 1
+          end
 
-              if parsed["references"]
-                reference_hash[key] += parsed["references"].length
-              end
-            end
-          rescue JSON::ParserError
-            puts "Could not parse #{line}"
+          if parsed["references"]
+            reference_hash[key] += parsed["references"].length
           end
         end
       end
@@ -177,16 +183,8 @@ HALP
       # generation number is key, value is count
       data = Hash.new {|h, k| h[k] = 0 }
 
-      File.open(@filename) do |f|
-        f.each_line do |line|
-          begin
-            line = line.chomp
-            json = JSON.parse(line)
-            data[json["generation"]|| default_key] += 1
-          rescue JSON::ParserError
-            puts "Could not parse #{line}"
-          end
-        end
+      read do |parsed|
+        data[parsed["generation"] || default_key] += 1
       end
 
       data = data.sort {|(k1,v1), (k2,v2)| v2 <=> v1 }
