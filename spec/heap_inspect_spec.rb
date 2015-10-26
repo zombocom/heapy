@@ -8,15 +8,13 @@ describe Heapy do
   it "drills down" do
     out = run("bin/heapy read #{ fixtures('00-heap.dump') } 36")
     expect(out).to match("377065  /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1")
-  end
 
-  it "drills down to generation 0" do
-    out = run("bin/heapy read #{ fixtures('00-heap.dump') } 0")
-    expect(out).to match("377065  /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1")
+    expect(out).to match("4  \"application\"")
+    puts out
   end
 
   it 'analyzes' do
     out = run("bin/heapy read #{ fixtures('00-heap.dump') }")
-    expect(out).to match("Generation:  0 object count: 209189")
+    expect(out).to match("Generation: nil object count: 209189")
   end
 end

@@ -27,16 +27,35 @@ Step 2) Once you've got the heap dump, you can analyze it using this CLI:
 ```
 $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump
 
-Generation:  0 object count: 209191
-Generation: 14 object count: 407
-Generation: 15 object count: 638
-Generation: 16 object count: 748
-Generation: 17 object count: 1023
-Generation: 18 object count: 805
+Generation: nil object count: 209191
+Generation:  14 object count: 407
+Generation:  15 object count: 638
+Generation:  16 object count: 748
+Generation:  17 object count: 1023
+Generation:  18 object count: 805
 # ...
 ```
 
-Generally early generations will have a high object count as an app is initialized. Over time however, the object count should stabalize. If however you see it spike up, you can drill down into a specific generation. In the previous example, the 17'th generation looks strangely large, you can drill into it:
+NOTE: The reason you may be getting a "nil" generation is these objects were loaded into memory before your code began tracking the allocations. To ensure all allocations are tracked you can execute your ruby script this trick. First create a file `trace.rb` that only starts allocation tracing:
+
+```
+# trace.rb
+require 'objspace'
+
+ObjectSpace.trace_object_allocations_start
+```
+
+Now make sure this command is loaded before you run your script, you can use Ruby's `-I` to specify a load path and `-r` to specify a library to require, in this case our trace file
+
+```
+$ ruby -I ./ -r trace < script_name.rb >
+```
+
+If the last line of your file is invalid JSON, make sure that you are closing the file after writing the ruby heap dump to it.
+
+## Digging into a Generation
+
+You can drill down into a specific generation. In the previous example, the 17'th generation looks strangely large, you can drill into it:
 
 
 ```

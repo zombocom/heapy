@@ -19,12 +19,12 @@ $ heapy read <file|command> <number>
 When run with only a file, it will output the generation and count pairs:
 
   $ heapy read tmp/2015-09-30-heap.dump
-    Generation:  0 object count: 209191
-    Generation: 14 object count: 407
-    Generation: 15 object count: 638
-    Generation: 16 object count: 748
-    Generation: 17 object count: 1023
-    Generation: 18 object count: 805
+    Generation: nil object count: 209191
+    Generation:  14 object count: 407
+    Generation:  15 object count: 638
+    Generation:  16 object count: 748
+    Generation:  17 object count: 1023
+    Generation:  18 object count: 805
 
 When run with a file and a number it will output detailed information for that
 generation:
@@ -78,8 +78,13 @@ HALP
       generation_to_inspect = Integer(generation_to_inspect)
 
       #
-      memsize_hash = Hash.new { |h, k| h[k] = 0 }
-      count_hash   = Hash.new { |h, k| h[k] = 0 }
+      memsize_hash    = Hash.new { |h, k| h[k] = 0  }
+      count_hash      = Hash.new { |h, k| h[k] = 0  }
+      string_count    = Hash.new { |h, k| h[k] = Hash.new { |h, k| h[k] = 0  } }
+
+      reference_hash  = Hash.new { |h, k| h[k] = 0  }
+
+      reverse_refs    = Hash.new { |h, k| h[k] = [] }
       File.open(@filename) do |f|
         f.each_line do |line|
           begin
@@ -89,12 +94,22 @@ HALP
               key = "#{ parsed["file"] }:#{ parsed["line"] }"
               memsize_hash[key] += parsed["memsize"] || 0
               count_hash[key]   += 1
+
+              if parsed["type"] == "STRING".freeze
+                string_count[parsed["value"]][key] += 1
+              end
+
+              if parsed["references"]
+                reference_hash[key] += parsed["references"].length
+              end
             end
           rescue JSON::ParserError
             puts "Could not parse #{line}"
           end
         end
       end
+
+      raise "not a valid Generation: #{generation_to_inspect}" if memsize_hash.empty?
 
       total_memsize = memsize_hash.inject(0){|count, (k, v)| count += v}
 
@@ -111,18 +126,53 @@ HALP
 
       puts ""
       puts "object count (#{total_count})"
-      puts "============"
+      puts "=============================="
       count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
       longest      = count_hash.first[1].to_s.length
       count_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
       end
+
+      puts ""
+      puts "High Ref Counts"
+      puts "=============================="
+      puts ""
+
+      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      longest      = count_hash.first[1].to_s.length
+      count_hash.each do |file_line, count|
+        puts "  #{count.to_s.rjust(longest)}  #{file_line}"
+      end
+
+      puts ""
+      puts "Duplicate strings"
+      puts "=============================="
+      puts ""
+      value_count = {}
+
+      string_count.each do |string, location_count_hash|
+        value_count[string] = location_count_hash.values.inject(&:+)
+      end
+
+      value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+      longest     = value_count.first[1].to_s.length
+
+      value_count.each do |string, c1|
+
+        puts " #{c1.to_s.rjust(longest)}  #{string.inspect}"
+        string_count[string].sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.each do |file_line, c2|
+         puts " #{c2.to_s.rjust(longest)}  #{file_line}"
+       end
+       puts ""
+      end
+
     end
 
     def analyze
       puts ""
       puts "Analyzing Heap"
       puts "=============="
+      default_key = "nil".freeze
 
       # generation number is key, value is count
       data = Hash.new {|h, k| h[k] = 0 }
@@ -132,15 +182,15 @@ HALP
           begin
             line = line.chomp
             json = JSON.parse(line)
-            data[json["generation"]||0] += 1
+            data[json["generation"]|| default_key] += 1
           rescue JSON::ParserError
             puts "Could not parse #{line}"
           end
         end
       end
 
-      data = data.sort
-      max_length = data.last[0].to_s.length
+      data = data.sort {|(k1,v1), (k2,v2)| v2 <=> v1 }
+      max_length = [data.last[0].to_s.length, default_key.length].max
       data.each do |generation, count|
         puts "Generation: #{ generation.to_s.rjust(max_length) } object count: #{ count }"
       end
