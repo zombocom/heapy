@@ -88,7 +88,7 @@ HALP
       puts "-------------------------------"
       puts ""
 
-      generation_to_inspect = Integer(generation_to_inspect)
+      generation_to_inspect = Integer(generation_to_inspect) unless generation_to_inspect == "all"
 
       #
       memsize_hash    = Hash.new { |h, k| h[k] = 0  }
@@ -97,16 +97,17 @@ HALP
 
       reference_hash  = Hash.new { |h, k| h[k] = 0  }
 
-      reverse_refs    = Hash.new { |h, k| h[k] = [] }
       read do |parsed|
         generation = parsed["generation"] || 0
-        if generation == generation_to_inspect
+        if generation_to_inspect == "all".freeze || generation == generation_to_inspect
+          next unless parsed["file"]
+
           key = "#{ parsed["file"] }:#{ parsed["line"] }"
           memsize_hash[key] += parsed["memsize"] || 0
           count_hash[key]   += 1
 
           if parsed["type"] == "STRING".freeze
-            string_count[parsed["value"]][key] += 1
+            string_count[parsed["value"]][key] += 1 if parsed["value"]
           end
 
           if parsed["references"]
@@ -115,14 +116,14 @@ HALP
         end
       end
 
-      raise "not a valid Generation: #{generation_to_inspect}" if memsize_hash.empty?
+      raise "not a valid Generation: #{generation_to_inspect.inspect}" if memsize_hash.empty?
 
       total_memsize = memsize_hash.inject(0){|count, (k, v)| count += v}
 
       # /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1"=>[{"address"=>"0x7f8a4fbf2328", "type"=>"STRING", "class"=>"0x7f8a4d5dec68", "bytesize"=>223051, "capacity"=>376832, "encoding"=>"UTF-8", "file"=>"/Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim", "line"=>1, "method"=>"new", "generation"=>36, "memsize"=>377065, "flags"=>{"wb_protected"=>true, "old"=>true, "long_lived"=>true, "marked"=>true}}]}
       puts "allocated by memory (#{total_memsize}) (in bytes)"
       puts "=============================="
-      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
       longest      = memsize_hash.first[1].to_s.length
       memsize_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
@@ -133,7 +134,7 @@ HALP
       puts ""
       puts "object count (#{total_count})"
       puts "=============================="
-      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
       longest      = count_hash.first[1].to_s.length
       count_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
@@ -144,9 +145,10 @@ HALP
       puts "=============================="
       puts ""
 
-      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }
+      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
       longest      = count_hash.first[1].to_s.length
-      count_hash.each do |file_line, count|
+
+      reference_hash.each do |file_line, count|
         puts "  #{count.to_s.rjust(longest)}  #{file_line}"
       end
 
@@ -184,12 +186,13 @@ HALP
       data = Hash.new {|h, k| h[k] = 0 }
 
       read do |parsed|
-        data[parsed["generation"] || default_key] += 1
+        data[parsed["generation"] || 0] += 1
       end
 
-      data = data.sort {|(k1,v1), (k2,v2)| v2 <=> v1 }
+      data = data.sort {|(k1,v1), (k2,v2)| k1 <=> k2 }
       max_length = [data.last[0].to_s.length, default_key.length].max
       data.each do |generation, count|
+        generation = default_key if generation == 0
         puts "Generation: #{ generation.to_s.rjust(max_length) } object count: #{ count }"
       end
     end

@@ -48,7 +48,7 @@ ObjectSpace.trace_object_allocations_start
 Now make sure this command is loaded before you run your script, you can use Ruby's `-I` to specify a load path and `-r` to specify a library to require, in this case our trace file
 
 ```
-$ ruby -I ./ -r trace < script_name.rb >
+$ ruby -I ./ -r trace script_name.rb
 ```
 
 If the last line of your file is invalid JSON, make sure that you are closing the file after writing the ruby heap dump to it.
@@ -71,6 +71,12 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
         189272  /app/vendor/bundle/ruby/2.2.0/gems/newrelic_rpm-3.13.2.302/lib/new_relic/agent/stats_engine/stats_hash.rb:39
         172531  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/net/http/header.rb:172
          92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
+```
+
+If you want to read all generations you can use the "all" directive
+
+```
+$ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump all
 ```
 
 You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations.
