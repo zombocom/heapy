@@ -184,17 +184,30 @@ HALP
 
       # generation number is key, value is count
       data = Hash.new {|h, k| h[k] = 0 }
+      mem = Hash.new {|h, k| h[k] = 0 }
+      total_count = 0
+      total_mem = 0
 
       read do |parsed|
         data[parsed["generation"] || 0] += 1
+        mem[parsed["generation"] || 0] += parsed["memsize"] || 0
       end
 
       data = data.sort {|(k1,v1), (k2,v2)| k1 <=> k2 }
       max_length = [data.last[0].to_s.length, default_key.length].max
       data.each do |generation, count|
         generation = default_key if generation == 0
-        puts "Generation: #{ generation.to_s.rjust(max_length) } object count: #{ count }"
+        total_count += count
+        total_mem += mem[generation]
+        puts "Generation: #{ generation.to_s.rjust(max_length) } object count: #{ count }, mem: #{(mem[generation].to_f / 1024).round(1)} kb"
       end
+
+      puts ""
+      puts "Heap total"
+      puts "=============="
+      puts "Generations (active): #{data.length}"
+      puts "Count: #{total_count}"
+      puts "Memory: #{(total_mem.to_f / 1024).round(1)} kb"
     end
   end
 end

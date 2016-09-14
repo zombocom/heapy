@@ -73,6 +73,8 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
          92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
 ```
 
+### Reviewing all generations
+
 If you want to read all generations you can use the "all" directive
 
 ```

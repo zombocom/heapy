@@ -23,8 +23,19 @@ describe Heapy do
     expect(out).to match("1672  /Users/richardschneeman/.gem/ruby/2.2.3/gems/activerecord-4.2.3/lib/active_record/attribute.rb:5")
   end
 
-  it 'analyzes' do
-    out = run("bin/heapy read #{ fixtures('00-heap.dump') }")
-    expect(out).to match("Generation: nil object count: 209189")
+  context 'with no generation specified' do
+    let(:cmd) { "bin/heapy read #{ fixtures('00-heap.dump') }" }
+    it 'analyzes' do
+      out = run(cmd)
+      expect(out).to match("Generation: nil object count: 209189")
+    end
+
+    it "summarizes" do
+      out = run(cmd)
+      expect(out).to include("Heap total")
+      expect(out).to include("Generations (active): 5")
+      expect(out).to include("Count: 278443")
+      expect(out).to include("Memory: 8004.6 kb")
+    end
   end
 end
