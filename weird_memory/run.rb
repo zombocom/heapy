@@ -1,9 +1,13 @@
 arg = ARGV.shift
 
-def run(file)
+@fail_count = 0
+
+def run(file, fail_count: @fail_count)
   cmd = "bundle exec ruby #{file}"
   puts "  $ #{ cmd }"
-  puts "    " + `#{cmd}`
+  result = `#{cmd}`
+  @fail_count += 1 if result.match(/FAIL/)
+  puts "    " + result
 end
 
 if arg.nil? || arg.downcase == "all"
@@ -19,3 +23,6 @@ else
     run(file)
   end
 end
+
+puts
+puts "Total failed: #{@fail_count}"
