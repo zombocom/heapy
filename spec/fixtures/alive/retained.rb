@@ -6,13 +6,13 @@ require 'heapy'
 Heapy::Alive.start_object_trace!(heap_file: ENV.fetch('HEAP_FILE'))
 
 def run
-  string = "string"
+  string = "string".dup
   Heapy::Alive.trace_without_retain(string)
 
-  array  = []
+  array  = [].dup
   Heapy::Alive.trace_without_retain(array)
 
-  hash   = {}
+  hash   = {}.dup
   Heapy::Alive.trace_without_retain(hash)
 
   return [string, array, hash]
