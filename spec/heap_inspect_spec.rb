@@ -6,12 +6,12 @@ describe Heapy do
   end
 
   it "drills down all" do
-    out = run("bin/heapy read #{ fixtures('00-heap.dump') } all")
+    out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } all")
     expect(out).to match("4325616  /Users/richardschneeman/.gem/ruby/2.2.3/gems/activesupport-4.2.3/lib/active_support/core_ext/marshal.rb:6")
   end
 
   it "drills down" do
-    out = run("bin/heapy read #{ fixtures('00-heap.dump') } 36")
+    out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } 36")
 
     # memory count
     expect(out).to match("377065  /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1")
@@ -24,7 +24,7 @@ describe Heapy do
   end
 
   context 'with no generation specified' do
-    let(:cmd) { "bin/heapy read #{ fixtures('00-heap.dump') }" }
+    let(:cmd) { "bin/heapy read #{ fixtures('dumps/00-heap.dump') }" }
     it 'analyzes' do
       out = run(cmd)
       expect(out).to match("Generation: nil object count: 209189")

@@ -2,8 +2,8 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'heapy'
 
 require 'pathname'
-    require "open3"
-
+require "open3"
+require 'tempfile'
 
 def fixtures(name)
   Pathname.new(File.expand_path("../fixtures", __FILE__)).join(name)
