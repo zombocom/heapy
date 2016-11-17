@@ -195,7 +195,7 @@ module Heapy
 
       def initialize(object_id: nil, address: nil, to_s: )
         if object_id
-          @address = "0x%08x" % (object_id * 2)
+          @address = "0x#{ (object_id << 1).to_s(16) }"
         else
           @address = address
         end
