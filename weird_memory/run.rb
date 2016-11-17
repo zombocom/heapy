@@ -2,6 +2,9 @@ arg = ARGV.shift
 
 @fail_count = 0
 
+require 'fileutils'
+FileUtils.mkdir_p("tmp")
+
 def run(file, fail_count: @fail_count)
   cmd = "bundle exec ruby #{file}"
   puts "  $ #{ cmd }"
