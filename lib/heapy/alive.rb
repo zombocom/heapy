@@ -1,4 +1,5 @@
 require 'objspace'
+require 'stringio'
 
 module Heapy
 
@@ -139,9 +140,44 @@ module Heapy
       end
     end
 
+  private
+    @string_io = StringIO.new
+    # GIANT BALL OF HACKS || THERE BE DRAGONS
+    #
+    # There is so much I don't understand on why I need to do the things
+    # I'm doing in this method.
+    #
+    # Also see `living_dead` https://github.com/schneems/living_dead
+    def self.gc_start
+      # During debugging I found calling "puts" made some things
+      # mysteriously work, I have no idea why. If you remove this line
+      # then (more) tests fail. Maybe it has something to do with the way
+      # GC interacts with IO? I seriously have no idea.
+      #
+      @string_io.puts "=="
+
+      # Calling flush so we don't create a memory leak.
+      # Funny enough maybe calling flush without `puts` also works?
+      # IDK
+      #
+      @string_io.flush
+
+      # Calling GC multiple times fixes a different class of things
+      # Specifically the singleton_class.instance_eval tests.
+      # It might also be related to calling GC in a block, but changing
+      # to 1.times brings back failures.
+      #
+      # Calling 2 times results in eventual failure https://twitter.com/schneems/status/804369346910896128
+      # Calling 5 times results in eventual failure https://twitter.com/schneems/status/804382968307445760
+      # Trying 10 times
+      #
+      10.times { GC.start }
+    end
+  public
+
     def self.traced_objects(retained_by: false)
       raise "You aren't tracing anything call Heapy::Alive.trace_without_retain first" if @retain_hash.empty?
-      GC.start
+      self.gc_start
 
       ObjectSpace.dump_all(output: File.open(@heap_file,'w'))
 
