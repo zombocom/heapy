@@ -87,26 +87,29 @@ module Heapy
         puts "  #{count.to_s.rjust(longest)}  #{file_line}"
       end
 
-      puts ""
-      puts "Duplicate strings"
-      puts "=============================="
-      puts ""
-      value_count = {}
+      if !string_count.empty?
+        puts ""
+        puts "Duplicate strings"
+        puts "=============================="
+        puts ""
 
-      string_count.each do |string, location_count_hash|
-        value_count[string] = location_count_hash.values.inject(&:+)
-      end
+        value_count = {}
 
-      value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
-      longest     = value_count.first[1].to_s.length
+        string_count.each do |string, location_count_hash|
+          value_count[string] = location_count_hash.values.inject(&:+)
+        end
 
-      value_count.each do |string, c1|
+        value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+        longest     = value_count.first[1].to_s.length
 
-        puts " #{c1.to_s.rjust(longest)}  #{string.inspect}"
-        string_count[string].sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.each do |file_line, c2|
-         puts " #{c2.to_s.rjust(longest)}  #{file_line}"
-       end
-       puts ""
+        value_count.each do |string, c1|
+
+          puts " #{c1.to_s.rjust(longest)}  #{string.inspect}"
+          string_count[string].sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.each do |file_line, c2|
+           puts " #{c2.to_s.rjust(longest)}  #{file_line}"
+         end
+         puts ""
+        end
       end
 
     end
