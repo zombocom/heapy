@@ -1,4 +1,5 @@
 # Heapy (Ruby Heap Dump Inspector)
+[![Help Contribute to Open Source](https://www.codetriage.com/schneems/heapy/badges/users.svg)](https://www.codetriage.com/schneems/heapy)
 
 A CLI for analyzing Ruby Heap dumps. Thanks to [Sam Saffron](http://samsaffron.com/archive/2015/03/31/debugging-memory-leaks-in-ruby) for the idea and initial code.
 
