@@ -17,7 +17,7 @@ module Heapy
       end
     end
 
-    def drill_down(generation_to_inspect)
+    def drill_down(generation_to_inspect, max_items_to_display)
       puts ""
       puts "Analyzing Heap (Generation: #{generation_to_inspect})"
       puts "-------------------------------"
@@ -58,7 +58,7 @@ module Heapy
       # /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1"=>[{"address"=>"0x7f8a4fbf2328", "type"=>"STRING", "class"=>"0x7f8a4d5dec68", "bytesize"=>223051, "capacity"=>376832, "encoding"=>"UTF-8", "file"=>"/Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim", "line"=>1, "method"=>"new", "generation"=>36, "memsize"=>377065, "flags"=>{"wb_protected"=>true, "old"=>true, "long_lived"=>true, "marked"=>true}}]}
       puts "allocated by memory (#{total_memsize}) (in bytes)"
       puts "=============================="
-      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
       longest      = memsize_hash.first[1].to_s.length
       memsize_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
@@ -69,7 +69,7 @@ module Heapy
       puts ""
       puts "object count (#{total_count})"
       puts "=============================="
-      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
       longest      = count_hash.first[1].to_s.length
       count_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
@@ -80,7 +80,7 @@ module Heapy
       puts "=============================="
       puts ""
 
-      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
       longest      = count_hash.first[1].to_s.length
 
       reference_hash.each do |file_line, count|
@@ -99,7 +99,7 @@ module Heapy
           value_count[string] = location_count_hash.values.inject(&:+)
         end
 
-        value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(50)
+        value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
         longest     = value_count.first[1].to_s.length
 
         value_count.each do |string, c1|

@@ -9,12 +9,13 @@ module Heapy
       @cmd    = argv.shift
       @file   = argv.shift
       @number = argv.shift
+      @top     = (argv.shift || 50).to_i
       @args   = argv
     end
 
     def help
       puts <<-HALP
-$ heapy read <file|command> <number>
+$ heapy read <file|command> <number> <max lines to display>
 
 When run with only a file, it will output the generation and count pairs:
 
@@ -42,6 +43,11 @@ allocated by memory (44061517) (in bytes)
     189272  /app/vendor/bundle/ruby/2.2.0/gems/newrelic_rpm-3.13.2.302/lib/new_relic/agent/stats_engine/stats_hash.rb:39
     172531  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/net/http/header.rb:172
      92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
+
+When analyzing a generation you can also pass in an extra argument to limit the amount of lines displayed:
+
+  $ heapy read tmp/2015-09-30-heap.dump 17 5
+
 HALP
     end
 
@@ -54,7 +60,7 @@ HALP
         help
       when "read"
         if @number
-          Analyzer.new(@file).drill_down(@number)
+          Analyzer.new(@file).drill_down(@number, @top)
         else
           Analyzer.new(@file).analyze
         end
@@ -67,4 +73,3 @@ end
 
 require 'heapy/analyzer'
 require 'heapy/alive'
-
