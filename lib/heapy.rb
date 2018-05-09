@@ -16,6 +16,26 @@ module Heapy
          Analyzer.new(file_name).analyze
        end
      end
+
+     def help(*args)
+       puts <<-HELP
+Heapy helps you analyze heap dumps.
+
+To get a heap dump do this:
+
+   require 'objspace'
+   ObjectSpace.trace_object_allocations_start
+
+   # Your code here
+
+   p ObjectSpace.dump_all
+
+This will print the file name of your heap dump.
+
+HELP
+
+       super
+     end
   end
 
 end
