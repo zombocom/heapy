@@ -131,7 +131,7 @@ module Heapy
           else
             address        = json_hash["address"]
             address_to_object = self.address_to_object(address)
-            representation = (address_to_object.respond_to?('&') ? address_to_object&.inspect : address_to_object.try(:inspect)) || "object not traced".freeze
+            representation = RUBY_VERSION.to_f > 2.2 ? address_to_object&.inspect : address_to_object.try(:inspect)) || "object not traced".freeze
             retainer = ObjectTracker.new(address: address, to_s: representation)
             retainer.raw_json_hash = json_hash
           end
