@@ -130,7 +130,8 @@ module Heapy
             retainer = RootTracker.new(json_hash)
           else
             address        = json_hash["address"]
-            representation = self.address_to_object(address)&.inspect || "object not traced".freeze
+            address_to_object = self.address_to_object(address)
+            representation = (address_to_object.respond_to?('&') ? address_to_object&.inspect : address_to_object.try(:inspect)) || "object not traced".freeze
             retainer = ObjectTracker.new(address: address, to_s: representation)
             retainer.raw_json_hash = json_hash
           end
