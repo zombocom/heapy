@@ -82,7 +82,7 @@ If you want to read all generations you can use the "all" directive
 $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump all
 ```
 
-You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations.
+You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations. Another tool is [HARB](https://github.com/csfrancis/harb)
 
 ## Development
 
