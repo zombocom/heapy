@@ -1,3 +1,8 @@
+## HEAD
+
+- Heapy::Alive is removed (https://github.com/schneems/heapy/pull/27)
+- The read command now takes a --lines flag that can be used to limit output when showing generational data
+
 ## 0.1.4 - 2018-07-25
 
 - Bundler is no longer required so heapy can now be used via a simple

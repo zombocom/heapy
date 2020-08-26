@@ -41,4 +41,3 @@ HELP
 end
 
 require 'heapy/analyzer'
-require 'heapy/alive'
