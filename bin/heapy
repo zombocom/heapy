@@ -4,4 +4,4 @@ require "bundler/setup" if defined?(Bundler)
 require "heapy"
 
 
-Heapy::CLI.new(ARGV).run
+Heapy::CLI.start(ARGV)
