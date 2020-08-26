@@ -1,5 +1,7 @@
 ## HEAD
 
+## 0.2.0
+
 - Heapy::Alive is removed (https://github.com/schneems/heapy/pull/27)
 - New command `heapy diff` (https://github.com/schneems/heapy/pull/26)
 - The read command now takes a --lines flag that can be used to limit output when showing generational data
