@@ -1,4 +1,14 @@
 module Heapy
+
+  # Used for inspecting contents of a heap dump
+  #
+  # To glance all contents at a glance run:
+  #
+  #   Analyzer.new(file_name).analyze
+  #
+  # To inspect contents of a specific generation run:
+  #
+  #   Analyzer.new(file_name).drill_down(generation, Float::INFINITY)
   class Analyzer
     def initialize(filename)
       @filename = filename
@@ -25,7 +35,6 @@ module Heapy
 
       generation_to_inspect = Integer(generation_to_inspect) unless generation_to_inspect == "all"
 
-      #
       memsize_hash    = Hash.new { |h, k| h[k] = 0  }
       count_hash      = Hash.new { |h, k| h[k] = 0  }
       string_count    = Hash.new { |h, k| h[k] = Hash.new { |h, k| h[k] = 0  } }

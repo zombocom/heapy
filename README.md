@@ -21,6 +21,34 @@ Or install it yourself as:
 
 ## Usage
 
+### Diff 2 heap dumps
+
+Run with two inputs to output the values of today.dump that are not present in yesterday.dump
+
+```
+$ heapy diff tmp/yesterday.dump tmp/today_morning.dump
+Allocated STRING 9991 objects of size 399640/491264 (in bytes) at: scratch.rb:24
+```
+
+Run with three inputs to show the diff between the first two, but only if the objects are still retained in the third
+
+```
+$ heapy diff tmp/yesterday.dump tmp/today_morning.dump tmp/today_afternoon.dump
+Retained STRING 9991 objects of size 399640/491264 (in bytes) at: scratch.rb:24
+# ...
+```
+
+Pass in the name of an output file and the objects present in today.dump that aren't in yesterday.dump will be written to that file
+
+```
+$ heapy diff tmp/yesterday.dump tmp/today.dump --output_diff=output.json
+Allocated STRING 9991 objects of size 399640/491264 (in bytes) at: scratch.rb:24
+# ...
+Writing heap dump diff to output.json
+```
+
+### Read a Heap Dump
+
 Step 1) Generate a heap dump. You could [do this manually](http://samsaffron.com/archive/2015/03/31/debugging-memory-leaks-in-ruby). Or you can use a tool like [derailed_benchmarks](https://github.com/schneems/derailed_benchmarks)
 
 Step 2) Once you've got the heap dump, you can analyze it using this CLI:
@@ -54,10 +82,9 @@ $ ruby -I ./ -r trace script_name.rb
 
 If the last line of your file is invalid JSON, make sure that you are closing the file after writing the ruby heap dump to it.
 
-## Digging into a Generation
+### Digging into a Generation
 
 You can drill down into a specific generation. In the previous example, the 17'th generation looks strangely large, you can drill into it:
-
 
 ```
 $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
@@ -73,6 +100,14 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17
         172531  /app/vendor/ruby-2.2.3/lib/ruby/2.2.0/net/http/header.rb:172
          92200  /app/vendor/bundle/ruby/2.2.0/gems/activesupport-4.2.3/lib/active_support/core_ext/numeric/conversions.rb:131
 ```
+
+You can limit the output by passing in a `--lines` value:
+
+```
+$ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17 --lines=6
+```
+
+> Note: Default lines value is 50
 
 ### Reviewing all generations
 
@@ -93,7 +128,6 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/schneems/heapy. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
-
 
 ## License
 

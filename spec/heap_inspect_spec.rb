@@ -5,6 +5,28 @@ describe Heapy do
     expect(Heapy::VERSION).not_to be nil
   end
 
+  describe "heap diffs" do
+    it "diffs 2 heaps" do
+      out = run("bin/heapy diff #{fixtures('dumps/diff/my_dump_1.json')} #{fixtures('dumps/diff/my_dump_2.json')}")
+      expect(out).to match("Allocated STRING 9991 objects")
+    end
+
+    it "diffs 3 heaps" do
+      out = run("bin/heapy diff #{fixtures('dumps/diff/my_dump_1.json')} #{fixtures('dumps/diff/my_dump_2.json')} #{fixtures('dumps/diff/my_dump_3.json')}")
+
+      expect(out).to match("Retained STRING 9991 objects")
+    end
+
+    it "outputs the diff" do
+      Dir.mktmpdir do |tmp_dir|
+        file = "#{tmp_dir}/output.dump"
+        run("bin/heapy diff #{fixtures('dumps/diff/my_dump_1.json')} #{fixtures('dumps/diff/my_dump_2.json')} --output_diff=#{file}")
+
+        expect(`cat #{file} | wc -l`).to match("10006")
+      end
+    end
+  end
+
   it "drills down all" do
     out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } all")
     expect(out).to match("4325616  /Users/richardschneeman/.gem/ruby/2.2.3/gems/activesupport-4.2.3/lib/active_support/core_ext/marshal.rb:6")
