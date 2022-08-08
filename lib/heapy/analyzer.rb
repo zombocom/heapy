@@ -35,13 +35,19 @@ module Heapy
 
       generation_to_inspect = Integer(generation_to_inspect) unless generation_to_inspect == "all"
 
-      memsize_hash    = Hash.new { |h, k| h[k] = 0  }
-      count_hash      = Hash.new { |h, k| h[k] = 0  }
-      string_count    = Hash.new { |h, k| h[k] = Hash.new { |h, k| h[k] = 0  } }
+      memsize_hash    = counters_hash
+      count_hash      = counters_hash
+      string_count    = Hash.new { |h, k| h[k] = counters_hash }
 
-      reference_hash  = Hash.new { |h, k| h[k] = 0  }
+      reference_hash  = counters_hash
+      class_names = {}
+      class_address_references = counters_hash
 
       read do |parsed|
+        if parsed["type"] == "CLASS".freeze
+          class_names[parsed["address"]] = parsed["name"] if parsed["name"]
+        end
+
         generation = parsed["generation"] || 0
         if generation_to_inspect == "all".freeze || generation == generation_to_inspect
           next unless parsed["file"]
@@ -57,6 +63,10 @@ module Heapy
           if parsed["references"]
             reference_hash[key] += parsed["references"].length
           end
+
+          if parsed["class"]
+            class_address_references[parsed["class"]] += 1
+          end
         end
       end
 
@@ -67,7 +77,7 @@ module Heapy
       # /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1"=>[{"address"=>"0x7f8a4fbf2328", "type"=>"STRING", "class"=>"0x7f8a4d5dec68", "bytesize"=>223051, "capacity"=>376832, "encoding"=>"UTF-8", "file"=>"/Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim", "line"=>1, "method"=>"new", "generation"=>36, "memsize"=>377065, "flags"=>{"wb_protected"=>true, "old"=>true, "long_lived"=>true, "marked"=>true}}]}
       puts "allocated by memory (#{total_memsize}) (in bytes)"
       puts "=============================="
-      memsize_hash = memsize_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
+      memsize_hash = top_n(memsize_hash, max_items_to_display)
       longest      = memsize_hash.first[1].to_s.length
       memsize_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
@@ -78,10 +88,22 @@ module Heapy
       puts ""
       puts "object count (#{total_count})"
       puts "=============================="
-      count_hash = count_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
+      count_hash = top_n(count_hash, max_items_to_display)
       longest      = count_hash.first[1].to_s.length
       count_hash.each do |file_line, memsize|
         puts "  #{memsize.to_s.rjust(longest)}  #{file_line}"
+      end
+
+      puts ""
+      puts "object counts by class"
+      puts "=============================="
+      class_counts_hash = class_address_references.each_with_object({}) do |(address, count), hash|
+        hash[class_names[address]] = count if class_names.key?(address)
+      end
+      class_counts_hash = top_n(class_counts_hash, max_items_to_display)
+      longest = class_counts_hash.first[1].to_s.length
+      class_counts_hash.each do |class_name, count|
+        puts "  #{count.to_s.rjust(longest)}  #{class_name}"
       end
 
       puts ""
@@ -89,7 +111,7 @@ module Heapy
       puts "=============================="
       puts ""
 
-      reference_hash = reference_hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
+      reference_hash = top_n(reference_hash, max_items_to_display)
       longest      = count_hash.first[1].to_s.length
 
       reference_hash.each do |file_line, count|
@@ -108,7 +130,7 @@ module Heapy
           value_count[string] = location_count_hash.values.inject(&:+)
         end
 
-        value_count = value_count.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(max_items_to_display)
+        value_count = top_n(value_count, max_items_to_display)
         longest     = value_count.first[1].to_s.length
 
         value_count.each do |string, c1|
@@ -130,8 +152,8 @@ module Heapy
       default_key = "nil".freeze
 
       # generation number is key, value is count
-      data = Hash.new {|h, k| h[k] = 0 }
-      mem = Hash.new {|h, k| h[k] = 0 }
+      data = counters_hash
+      mem = counters_hash
       total_count = 0
       total_mem = 0
 
@@ -155,6 +177,16 @@ module Heapy
       puts "Generations (active): #{data.length}"
       puts "Count: #{total_count}"
       puts "Memory: #{(total_mem.to_f / 1024).round(1)} kb"
+    end
+
+    private
+
+    def counters_hash
+      Hash.new { |h, k| h[k] = 0 }
+    end
+
+    def top_n(hash, n)
+      hash.sort {|(k1, v1), (k2, v2)| v2 <=> v1 }.first(n)
     end
   end
 end
