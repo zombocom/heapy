@@ -29,7 +29,11 @@ describe Heapy do
 
   it "drills down all" do
     out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } all")
+    # memory count
     expect(out).to match("4325616  /Users/richardschneeman/.gem/ruby/2.2.3/gems/activesupport-4.2.3/lib/active_support/core_ext/marshal.rb:6")
+
+    # class counts
+    expect(out).to match("19046  String")
   end
 
   it "drills down" do
@@ -40,6 +44,9 @@ describe Heapy do
 
     # string counts
     expect(out).to match("4  \"application\"")
+
+    # class counts
+    expect(out).to match("545  String")
 
     # ref counts
     expect(out).to match("1672  /Users/richardschneeman/.gem/ruby/2.2.3/gems/activerecord-4.2.3/lib/active_record/attribute.rb:5")
