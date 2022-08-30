@@ -47,6 +47,20 @@ Allocated STRING 9991 objects of size 399640/491264 (in bytes) at: scratch.rb:24
 Writing heap dump diff to output.json
 ```
 
+#### Limitations
+
+Due to how the garbage collector in MRI manages objects on the Ruby heap, `heapy diff` may produce incomplete
+or incorrect diffs under the following circumstances:
+
+1. **Heap compaction.** When compacting the Ruby heap either manually via `GC.compact` or with auto-compaction
+   enabled, heapy cannot produce accurate diffs, because objects may move into different heap slots and will appear as
+   newly allocated even if they weren't. In general, any mechanism that moves existing objects from one heap slot to
+   another will invalidate diff reports. Always turn off compaction before taking the `<after>` heap dump.
+1. **Temporary allocations.** Diffs might omit objects from an `<after>` dump if Ruby allocated them into heap slots that were
+   previously occupied by different objects in the `<before>` dump, and which were then deallocated between both dumps.
+   To minimize the chance of this happening, triggering a major GC three or more times between heap dumps can help
+   tenuring survivors and thus stabilizing the heap prior to taking a diff.
+
 ### Read a Heap Dump
 
 Step 1) Generate a heap dump. You could [do this manually](http://samsaffron.com/archive/2015/03/31/debugging-memory-leaks-in-ruby). Or you can use a tool like [derailed_benchmarks](https://github.com/schneems/derailed_benchmarks)
