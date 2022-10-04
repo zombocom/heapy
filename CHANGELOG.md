@@ -1,5 +1,7 @@
 ## HEAD
 
+- New command `heapy ref-explore` (https://github.com/zombocom/heapy/pull/33)
+
 ## 0.2.0
 
 - Heapy::Alive is removed (https://github.com/schneems/heapy/pull/27)

@@ -67,6 +67,33 @@ module Heapy
       Diff.new(before: before, after: after, retained: retained, output_diff: options[:output_diff] || nil).call
     end
 
+    long_desc <<-DESC
+      Follows references to given object addresses and prints them as a reference stack. This can for example be useful
+      if you are wondering why a given object has not been garbage collected.
+
+      Run with a list of addresses to get results for reference stacks to all the given addresses
+
+        $ heapy ref-explore my.dump 0xabcdef 0xdeadbeef\x5
+
+      Run without specifying addresses to get an interactive prompt that asks you to enter one address at a time
+
+        $ heapy ref-explore my.dump\x5
+
+    DESC
+    desc "ref-explore <file> [<address>...]", "Follows references to a given object"
+    def ref_explore(file, *addresses)
+      explorer = ReferenceExplorer.new(file)
+      if addresses.any?
+        explorer.drill_down_list(addresses)
+      else
+        begin
+          explorer.drill_down_interactive
+        rescue Interrupt
+          nil
+        end
+      end
+    end
+
     map %w[--version -v] => :version
     desc "version", "Show heapy version"
     def version
@@ -103,3 +130,4 @@ end
 
 require 'heapy/analyzer'
 require 'heapy/diff'
+require 'heapy/reference_explorer'
