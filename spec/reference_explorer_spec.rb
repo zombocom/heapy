@@ -8,11 +8,13 @@ describe Heapy::ReferenceExplorer do
   let(:output) { stdout.string }
 
   around(:each) do |ex|
-    original = $stdout
-    $stdout = stdout
-    ex.run
-  ensure
-    $stdout = original
+    begin
+      original = $stdout
+      $stdout = stdout
+      ex.run
+    ensure
+      $stdout = original
+    end
   end
 
   describe 'when inspecting an object address' do

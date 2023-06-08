@@ -79,7 +79,7 @@ module Heapy
 
       return unless addr
 
-      simple_object = o.slice('type', 'file', 'name', 'class', 'length', 'imemo_type')
+      simple_object = o.select { |k, _v| %w[type file name class length imemo_type].include?(k) }
       simple_object['class'] = simple_object['class'].to_i(16) if simple_object.key?('class')
       simple_object['file'] = o['file'] + ":#{o['line']}" if o.key?('file') && o.key?('line')
 
