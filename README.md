@@ -133,6 +133,74 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump all
 
 You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations. Another tool is [HARB](https://github.com/csfrancis/harb)
 
+### Following references to an object
+
+Using the methods above you might find out that certain kinds of objects are retained for many generations, but you might still not know what keeps them retained.
+
+For this purpose you can use `heapy ref-explore`, which will follow the references to an object until it finds a GC root node. This should give you an
+indication, _why_ an object is still retained:
+
+```
+$ heapy ref-explore spec/fixtures/dumps/00-heap.dump 0x7fb47763feb0
+
+## Reference chain
+<OBJECT ActiveRecord::Attribute::FromDatabase 0x7FB47763FEB0> (allocated at activerecord-4.2.3/lib/active_record/attribute.rb:5)
+<HASH 0x7FB474CA1A90> (allocated at lib/active_record/attribute_set/builder.rb:30)
+<OBJECT ActiveRecord::LazyAttributeHash 0x7FB474CA1B30> (allocated at lib/active_record/attribute_set/builder.rb:16)
+<OBJECT ActiveRecord::AttributeSet 0x7FB474CA1A68> (allocated at lib/active_record/attribute_set/builder.rb:17)
+<OBJECT Repo 0x7FB474CA1A40> (allocated at activerecord-4.2.3/lib/active_record/core.rb:114)
+<ARRAY 996 items 0x7FB474D790A8> (allocated at activerecord-4.2.3/lib/active_record/querying.rb:50)
+<OBJECT Repo::ActiveRecord_Relation 0x7FB476A8BE98> (allocated at lib/active_record/relation/spawn_methods.rb:10)
+<OBJECT PagesController 0x7FB476AB25C0> (allocated at actionpack-4.2.3/lib/action_controller/metal.rb:237)
+<HASH 0x7FB4772EAE68> (allocated at rack-1.6.4/lib/rack/mock.rb:92)
+<OBJECT ActionDispatch::Request 0x7FB476AB2480> (allocated at actionpack-4.2.3/lib/action_controller/metal.rb:237)
+<OBJECT ActionDispatch::Response 0x7FB476AB2458> (allocated at lib/action_controller/metal/rack_delegation.rb:28)
+<ROOT machine_context 0x2> (allocated at )
+
+## All references to 0x7fb47763feb0
+ * <HASH 0x7FB474CA1A90> (allocated at lib/active_record/attribute_set/builder.rb:30)
+```
+
+#### Obtaining object addresses for inspection
+
+Heapy does not _yet_ include a way to obtain suitable addresses for further inspection. You might work around this using `grep`. Assuming you are
+looking for a string in generation 35 of your dump, you can filter like this:
+
+```
+grep "generation\":35" spec/fixtures/dumps/00-heap.dump | grep STRING
+```
+
+You can then try any of the addresses returned in the result.
+
+#### Interactive mode
+
+Loading a larger heap dump for reference exploration might take some time and you might want to try more than one object address to see if they all share the same path to a root node. When called without an address, `ref-explore` will enter interactive mode, where you can enter an address, see the result and then enter the next address until you quit (Ctrl+C):
+
+```
+heapy ref-explore spec/fixtures/dumps/00-heap.dump
+Enter address > 0xdeadbeef
+
+Could not find a reference chain leading to a root node. Searching for a non-specific chain now.
+
+## Reference chain
+
+## All references to 0xdeadbeef
+
+Enter address > 0x7fb47763df70
+
+## Reference chain
+<STRING 0x7FB47763DF70> (allocated at lib/active_record/type/string.rb:35)
+<OBJECT ActiveRecord::Attribute::FromDatabase 0x7FB47763DF98> (allocated at activerecord-4.2.3/lib/active_record/attribute.rb:5)
+--- shortened for documentation purposes ---
+<OBJECT ActionDispatch::Response 0x7FB476AB2458> (allocated at lib/action_controller/metal/rack_delegation.rb:28)
+<ROOT machine_context 0x2> (allocated at )
+
+## All references to 0x7fb47763df70
+ * <OBJECT ActiveRecord::Attribute::FromDatabase 0x7FB47763DF98> (allocated at activerecord-4.2.3/lib/active_record/attribute.rb:5)
+
+Enter address >
+```
+
 ## Development
 
 After checking out the repo, run `$ bundle install` to install dependencies. Then, run `rake spec` to run the tests.
