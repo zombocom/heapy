@@ -36,6 +36,15 @@ describe Heapy do
     expect(out).to match("19046  String")
   end
 
+  it "drills down some" do
+    out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } 35-36")
+    # memory count
+    expect(out).to match("377065  /Users/richardschneeman/Documents/projects/codetriage/app/views/layouts/application.html.slim:1")
+
+    # class counts
+    expect(out).to match("8220  String")
+  end
+
   it "drills down" do
     out = run("bin/heapy read #{ fixtures('dumps/00-heap.dump') } 36")
 

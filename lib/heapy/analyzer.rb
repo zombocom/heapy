@@ -27,13 +27,19 @@ module Heapy
       end
     end
 
-    def drill_down(generation_to_inspect, max_items_to_display)
+    def drill_down(generations_to_inspect, max_items_to_display)
       puts ""
-      puts "Analyzing Heap (Generation: #{generation_to_inspect})"
+      puts "Analyzing Heap (Generation: #{generations_to_inspect})"
       puts "-------------------------------"
       puts ""
 
-      generation_to_inspect = Integer(generation_to_inspect) unless generation_to_inspect == "all"
+      min_gen, max_gen = if generations_to_inspect == "all"
+                           [nil, nil]
+                         else
+                           generations_to_inspect.split("-").map { |gen| Integer(gen) }
+                         end
+
+      max_gen = min_gen if min_gen && !max_gen # single generation selected
 
       memsize_hash    = counters_hash
       count_hash      = counters_hash
@@ -49,7 +55,7 @@ module Heapy
         end
 
         generation = parsed["generation"] || 0
-        if generation_to_inspect == "all".freeze || generation == generation_to_inspect
+        if min_gen.nil? || (generation >= min_gen && generation <= max_gen)
           next unless parsed["file"]
 
           key = "#{ parsed["file"] }:#{ parsed["line"] }"
@@ -70,7 +76,7 @@ module Heapy
         end
       end
 
-      raise "not a valid Generation: #{generation_to_inspect.inspect}" if memsize_hash.empty?
+      raise "Nothing found in generation: #{generations_to_inspect.inspect}" if memsize_hash.empty?
 
       total_memsize = memsize_hash.inject(0){|count, (k, v)| count += v}
 

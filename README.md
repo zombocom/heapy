@@ -123,12 +123,18 @@ $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 17 --lines=6
 
 > Note: Default lines value is 50
 
-### Reviewing all generations
+### Reviewing multiple generations
 
 If you want to read all generations you can use the "all" directive
 
 ```
 $ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump all
+```
+
+Alternatively you can provide a range of generations that should be considered
+
+```
+$ heapy read tmp/2015-10-01T10:18:59-05:00-heap.dump 5-10
 ```
 
 You can also use T-Lo's online JS based [Heap Analyzer](http://tenderlove.github.io/heap-analyzer/) for visualizations. Another tool is [HARB](https://github.com/csfrancis/harb)
